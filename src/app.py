@@ -29,7 +29,7 @@ def speak(text):
     audio = client.text_to_speech.convert(
         text=text,
         voice_id="21m00Tcm4TlvDq8ikWAM",  # Replace with the correct voice_id for 'Rachel'
-        model_id="eleven_multilingual_v2",
+        model_id="eleven_flash_v2_5",
         output_format="mp3_44100_128",
     )
     play(audio)
@@ -63,7 +63,13 @@ def listen_for_command():
         try:
             audio = recognizer.listen(source, timeout=5)
             text = recognizer.recognize_google(audio).lower()
+            
+            if "be quiet" in text or "shut up" in text:
+                print("Assistant silenced.")
+                return "STOP"  # Special command to break out
+
             return text
+        
         except sr.UnknownValueError:
             speak("Sorry, I didn't catch that")
         except sr.RequestError:
@@ -72,6 +78,7 @@ def listen_for_command():
             speak("No input detected")
     
     return None
+
 
 def ask_ai(prompt):
     response = model.generate_content(prompt)
@@ -87,10 +94,10 @@ while True:
 
         while True:
             command = listen_for_command()
+            if command == "STOP":
+                break  # Immediately stop talking and go back to wake word mode
+            
             if command:
-                if "be quiet" in command or "shut up" in command:
-                    continue  # Stop responding but keep listening
-
                 print("You:", command)
                 ai_response = ask_ai(command)
                 print("AI:", ai_response)
