@@ -1,17 +1,20 @@
 import google.generativeai as genai
 import os
 import speech_recognition as sr
-import pyttsx3
-from gtts import gTTS
-import pygame
 import time
-import io
 from dotenv import load_dotenv
+from elevenlabs import play
+from elevenlabs.client import ElevenLabs
+
+# Load API keys from .env
 load_dotenv()
+client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
+
+# Configure Gemini AI
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
-
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+
 model = genai.GenerativeModel(
     "gemini-2.0-flash",
     generation_config={
@@ -19,24 +22,19 @@ model = genai.GenerativeModel(
         "max_output_tokens": 200, 
     },
     system_instruction="You are a helpful voice assistant. Answer concisely and naturally, without lists, formatting, or structured prompts.",
-) 
-
-# init speech recognition
-tts_engine = pyttsx3.init()
-tts_engine.setProperty("rate", 150)  
+)
 
 def speak(text):
-    tts = gTTS(text)
-    audio_stream = io.BytesIO()
-    tts.write_to_fp(audio_stream)
-    audio_stream.seek(0)
+    """Generate and play voice using ElevenLabs"""
+    audio = client.text_to_speech.convert(
+        text=text,
+        voice_id="21m00Tcm4TlvDq8ikWAM",  # Replace with the correct voice_id for 'Rachel'
+        model_id="eleven_multilingual_v2",
+        output_format="mp3_44100_128",
+    )
+    play(audio)
 
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_stream, "mp3")
-    pygame.mixer.music.play()
 
-def stop_speak():
-    pygame.mixer.music.stop()
 
 def listen():
     recognizer = sr.Recognizer()
@@ -45,11 +43,10 @@ def listen():
         recognizer.adjust_for_ambient_noise(source)
         
         try:
-            audio = recognizer.listen(source, timeout=10)  # wake word
+            audio = recognizer.listen(source, timeout=10)
             text = recognizer.recognize_google(audio).lower()
             return text
         except sr.UnknownValueError:
-            
             return None
         except sr.RequestError:
             print("Speech recognition is unavailable.")
@@ -57,16 +54,14 @@ def listen():
         except sr.WaitTimeoutError:
             return None
 
-
 def listen_for_command():
-    """Listens for a command after wake word is detected."""
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening for command...")
         recognizer.adjust_for_ambient_noise(source)
         
         try:
-            audio = recognizer.listen(source, timeout=5)  # wait for command
+            audio = recognizer.listen(source, timeout=5)
             text = recognizer.recognize_google(audio).lower()
             return text
         except sr.UnknownValueError:
@@ -78,19 +73,15 @@ def listen_for_command():
     
     return None
 
-
 def ask_ai(prompt):
     response = model.generate_content(prompt)
     return response.text 
-
 
 while True:
     wake_word = listen()
     if wake_word and "computer" in wake_word.lower():
         print("Wake word detected")
-        speak("Yes how can I help you?")
-        
-        # TODO: ENABLE RING LIGHT, PRINT IN LCD
+        speak("Yes, how can I help you?")
         
         last_response_time = time.time()
 
@@ -98,8 +89,7 @@ while True:
             command = listen_for_command()
             if command:
                 if "be quiet" in command or "shut up" in command:
-                    stop_speak()
-                    continue
+                    continue  # Stop responding but keep listening
 
                 print("You:", command)
                 ai_response = ask_ai(command)
@@ -110,4 +100,3 @@ while True:
             if time.time() - last_response_time > 7:
                 print("No response for 7 seconds. Going back to wake word mode.")
                 break
-
