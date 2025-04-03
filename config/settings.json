@@ -1,0 +1,20 @@
+{
+    "elevenlabs": {
+        "voice_id": "21m00Tcm4TlvDq8ikWAM",
+        "model_id": "eleven_flash_v2.5"
+    },
+    "sr": {
+        "wake_word": "computer",
+        "timeout": 10,
+        "command_timeout": 7
+    },
+    "genai": {
+        "temperature": 0.7,
+        "max_output_tokens": 200,
+        "instruction": "You are a helpful voice assistant. Answer concisely and naturally, without lists, formatting, or structured prompts."
+    },
+    "audio_settings": {
+        "sample_rate": 16000,
+        "noise_reduction": true
+    }
+}
