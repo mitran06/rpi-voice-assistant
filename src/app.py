@@ -6,12 +6,11 @@ from dotenv import load_dotenv
 from elevenlabs import play
 from elevenlabs.client import ElevenLabs
 
-# Load API keys from .env
+
 load_dotenv()
 client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
 
-# Configure Gemini AI
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
@@ -28,7 +27,7 @@ def speak(text):
     """Generate and play voice using ElevenLabs"""
     audio = client.text_to_speech.convert(
         text=text,
-        voice_id="21m00Tcm4TlvDq8ikWAM",  # Replace with the correct voice_id for 'Rachel'
+        voice_id="21m00Tcm4TlvDq8ikWAM",
         model_id="eleven_flash_v2_5",
         output_format="mp3_44100_128",
     )
@@ -66,7 +65,7 @@ def listen_for_command():
             
             if "be quiet" in text or "shut up" in text:
                 print("Assistant silenced.")
-                return "STOP"  # Special command to break out
+                return "STOP" 
 
             return text
         
@@ -95,8 +94,8 @@ while True:
         while True:
             command = listen_for_command()
             if command == "STOP":
-                break  # Immediately stop talking and go back to wake word mode
-            
+                break 
+
             if command:
                 print("You:", command)
                 ai_response = ask_ai(command)
