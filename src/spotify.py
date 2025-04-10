@@ -14,6 +14,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 )
 
 def play_song(song_name):
+    print(f"Searching for song: {song_name}")
     result = sp.search(q=song_name, type='track', limit=1)
     tracks = result.get('tracks', {}).get('items', [])
 
@@ -22,7 +23,6 @@ def play_song(song_name):
         return False
 
     track = tracks[0]
-    # Use the device ID from sp.devices() to select which device to play on
     devices = sp.devices()
     device_id = devices["devices"][0]["id"]
     sp.start_playback(device_id=device_id, uris=[track['uri']])
