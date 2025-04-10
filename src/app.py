@@ -6,12 +6,11 @@ import speech_recognition as sr
 import google.generativeai as genai
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
+from spotify import play_song
 
-# Load API keys from .env
 load_dotenv()
 client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
-# Load config from settings.json
 config_path = os.path.join(os.path.dirname(__file__), "../config/settings.json")
 with open(config_path, "r") as f:
     settings = json.load(f)
@@ -85,7 +84,7 @@ def listen_for_command():
             text = recognizer.recognize_google(audio).lower()
             return text
         except sr.UnknownValueError:
-            speak("Sorry, I didn't catch that")
+            print("Sorry, I didn't catch that")
         except sr.RequestError:
             speak("Speech recognition service is unavailable")
         except sr.WaitTimeoutError:
@@ -106,9 +105,17 @@ while True:
         while True:
             command = listen_for_command()
             if command:
+                # shut up
                 if "be quiet" in command or "shut up" in command:
                     stop_speak()
                     continue
+                # music
+                if command.startswith("play "):
+                    song_to_play = command[5:].strip()
+                    success = play_song(song_to_play)
+                    if not success:
+                        speak("I couldn't find that song.")
+                    break
 
                 print("You:", command)
                 ai_response = ask_ai(command)
