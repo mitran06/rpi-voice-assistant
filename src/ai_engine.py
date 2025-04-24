@@ -1,8 +1,5 @@
 import os, google.generativeai as genai
 from config.settings import settings
-# from dotenv import load_dotenv  # Remove if not needed
-
-# load_dotenv()  # Remove if .env is loaded in app.py
 
 if os.getenv("GOOGLE_API_KEY") is None:
     raise ValueError("GOOGLE_API_KEY is not set.")
